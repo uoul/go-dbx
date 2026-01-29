@@ -20,7 +20,7 @@ func parseDbResult[T any](rows *sql.Rows) ([]T, error) {
 	for rows.Next() {
 		var item T
 		// Create map of all fields from row
-		fieldMap, err := createFieldMap(reflect.ValueOf(&item).Elem(), columns, "")
+		fieldMap, err := createFieldMap(reflect.ValueOf(&item).Elem(), "")
 		if err != nil {
 			return nil, err
 		}
@@ -44,7 +44,7 @@ func parseDbResult[T any](rows *sql.Rows) ([]T, error) {
 	return result, rows.Err()
 }
 
-func createFieldMap(val reflect.Value, columns []string, prefix string) (map[string]any, error) {
+func createFieldMap(val reflect.Value, prefix string) (map[string]any, error) {
 	fieldMap := make(map[string]any)
 	typ := val.Type()
 	// Inspect all fields of type
@@ -58,7 +58,7 @@ func createFieldMap(val reflect.Value, columns []string, prefix string) (map[str
 		}
 		// Handle embedded structs
 		if field.Kind() == reflect.Struct && fieldType.Anonymous {
-			nestedMap, err := createFieldMap(field, columns, prefix)
+			nestedMap, err := createFieldMap(field, prefix)
 			if err != nil {
 				return nil, err
 			}
@@ -78,7 +78,7 @@ func createFieldMap(val reflect.Value, columns []string, prefix string) (map[str
 				nestedPrefix = prefix + "_" + nestedPrefix
 			}
 			// Recursively process nested struct
-			nestedMap, err := createFieldMap(field, columns, nestedPrefix)
+			nestedMap, err := createFieldMap(field, nestedPrefix)
 			if err != nil {
 				return nil, err
 			}
