@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"reflect"
 	"strings"
+	"time"
 )
 
 const (
@@ -67,8 +68,8 @@ func createFieldMap(val reflect.Value, prefix string) (map[string]any, error) {
 			}
 			continue
 		}
-		// Handle non-embedded nested structs
-		if field.Kind() == reflect.Struct {
+		// Handle non-embedded nested structs (except time.Time)
+		if field.Kind() == reflect.Struct && fieldType.Type != reflect.TypeFor[time.Time]() {
 			nestedPrefix := fieldTag
 			if nestedPrefix == "" {
 				nestedPrefix = strings.ToLower(fieldType.Name)
