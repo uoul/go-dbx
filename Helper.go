@@ -19,8 +19,21 @@ func parseDbResult[T any](rows *sql.Rows) ([]T, error) {
 	}
 	result := []T{}
 	for rows.Next() {
+		// Create item
 		var item T
-		// Create map of all fields from row
+		// Handle non structure types
+		if reflect.TypeFor[T]().Kind() != reflect.Struct {
+			// Handle primitive types directly
+			if len(columns) != 1 {
+				return nil, NewErrInvalidDataType("expected 1 column for primitive type, got %d", len(columns))
+			}
+			if err := rows.Scan(&item); err != nil {
+				return nil, err
+			}
+			result = append(result, item)
+			continue
+		}
+		// Create map of all fields from row (if struct)
 		fieldMap, err := createFieldMap(reflect.ValueOf(&item).Elem(), "")
 		if err != nil {
 			return nil, err
