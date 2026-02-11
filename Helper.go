@@ -17,7 +17,7 @@ func parseDbResult[T any](rows *sql.Rows) ([]T, error) {
 	if err != nil {
 		return nil, err
 	}
-	var result []T
+	result := []T{}
 	for rows.Next() {
 		var item T
 		// Create map of all fields from row
